@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIE WELLE | Ordnung. Gemeinschaft. Disziplin.</title>
+    <meta name="description" content="Eine dystopische Rekonstruktion der Bewegung 'Die Welle'.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        darker: '#000000',
+                        accent: '#8b0000', // Dark Red
+                        accentHover: '#b30000',
+                        terminal: '#ff2a2a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Oswald', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Variables & Setup */
+        :root {
+            --glitch-color-1: rgba(255, 0, 0, 0.8);
+            --glitch-color-2: rgba(0, 255, 255, 0.8);
+            --bg-intensity: 0; /* Changed by JS on scroll */
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: #e5e5e5;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- VISUAL OVERLAYS (Surveillance/Dystopian Aesthetic) --- */
+        #grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        #scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 99;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            opacity: 0.6;
+            animation: panScanlines 10s linear infinite;
+        }
+
+        #vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 98;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.95);
+        }
+
+        #fog-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        @keyframes panScanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass-nav {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(139, 0, 0, 0.5);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.2);
+            transform: translateY(-5px);
+        }
+
+        /* --- GLITCH EFFECTS --- */
+        .glitch-text {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+        
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--glitch-color-1);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+            z-index: -1;
+        }
+        
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--glitch-color-2);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+            z-index: -2;
+        }
+
+        .hover-glitch:hover {
+            animation: textGlitch 0.2s linear infinite;
+            color: var(--accent);
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 20% 0); }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            20% { clip-path: inset(30% 0 20% 0); }
+            40% { clip-path: inset(70% 0 10% 0); }
+            60% { clip-path: inset(20% 0 50% 0); }
+            80% { clip-path: inset(50% 0 30% 0); }
+            100% { clip-path: inset(5% 0 80% 0); }
+        }
+
+        @keyframes textGlitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 1px); }
+            40% { transform: translate(-1px, -1px); }
+            60% { transform: translate(2px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+
+        /* --- SCROLL REVEAL --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Timeline Custom */
+        .timeline-line {
+            width: 2px;
+            background: linear-gradient(to bottom, #333 0%, var(--accent) 100%);
+        }
+
+        /* Dashboard specific */
+        .scan-line-horizontal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 0, 0, 0.5);
+            animation: scanScreen 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanScreen {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Wave Background Animation */
+        .bg-wave {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at center, rgba(139,0,0,0.05) 0%, rgba(0,0,0,0) 50%);
+            animation: rotateWave 30s linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes rotateWave {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="relative text-gray-300">
+
+    <!-- OVERLAYS -->
+    <div id="grain-overlay"></div>
+    <div id="scanlines"></div>
+    <div id="vignette"></div>
+    <canvas id="fog-canvas"></canvas>
+
+    <!-- NAVIGATION -->
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#home" class="font-heading font-bold text-2xl tracking-widest text-white hover-glitch">DIE WELLE</a>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-mono tracking-wider">
+                    <a href="#bewegung" class="hover:text-accent transition-colors">BEWEGUNG</a>
+                    <a href="#grundsaetze" class="hover:text-accent transition-colors">GRUNDSÄTZE</a>
+                    <a href="#gemeinschaft" class="hover:text-accent transition-colors">GEMEINSCHAFT</a>
+                    <a href="#chronik" class="hover:text-accent transition-colors">CHRONIK</a>
+                    <a href="#dashboard" class="text-accent hover:text-red-400 transition-colors animate-pulse">[AKTE_W]</a>
+                    <a href="#analyse" class="hover:text-accent transition-colors">ANALYSE</a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass-nav border-t border-gray-800 font-mono text-sm">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#bewegung" class="block px-3 py-2 text-gray-300 hover:text-accent">BEWEGUNG</a>
+                <a href="#grundsaetze" class="block px-3 py-2 text-gray-300 hover:text-accent">GRUNDSÄTZE</a>
+                <a href="#gemeinschaft" class="block px-3 py-2 text-gray-300 hover:text-accent">GEMEINSCHAFT</a>
+                <a href="#chronik" class="block px-3 py-2 text-gray-300 hover:text-accent">CHRONIK</a>
+                <a href="#dashboard" class="block px-3 py-2 text-accent">[AKTE_W]</a>
+                <a href="#analyse" class="block px-3 py-2 text-gray-300 hover:text-accent">ANALYSE</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="relative z-10">
+
+        <!-- 1. STARTSEITE -->
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
+            <div class="bg-wave"></div>
+            <div class="z-10 max-w-4xl">
+                <h1 class="font-heading font-bold text-5xl md:text-8xl tracking-tighter mb-6 text-white glitch-text uppercase" data-text="Ordnung. Gemeinschaft. Disziplin.">
+                    Ordnung.<br>Gemeinschaft.<br>Disziplin.
+                </h1>
+                <p class="font-mono text-lg md:text-xl text-gray-400 tracking-widest mt-8 reveal">
+                    EINE BEWEGUNG BEGINNT MIT EINER IDEE.
+                </p>
+                <div class="mt-16 animate-bounce opacity-50">
+                    <p class="font-mono text-xs tracking-widest mb-2">INITIATING SEQUENCE</p>
+                    <div class="w-px h-16 bg-gradient-to-b from-white to-transparent mx-auto"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DIE BEWEGUNG -->
+        <section id="bewegung" class="min-h-screen flex items-center py-20">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                    <div class="reveal">
+                        <h2 class="font-heading text-4xl md:text-6xl font-bold mb-6 text-white border-l-4 border-accent pl-4">DIE BEWEGUNG</h2>
+                        <p class="text-xl text-gray-300 font-light leading-relaxed mb-6">
+                            Wir sind mehr als die Summe unserer Teile. Was als einfaches pädagogisches Experiment begann, hat sich zu einer Lebensader entwickelt. Wir haben den Egoismus abgelegt.
+                        </p>
+                        <p class="text-lg text-gray-400 font-mono leading-relaxed opacity-80">
+                            > Uniformität schafft Gleichheit.<br>
+                            > Gehorsam schafft Richtung.<br>
+                            > Der Einzelne ist nichts. Die Gruppe ist alles.
+                        </p>
+                    </div>
+                    <div class="relative reveal delay-200">
+                        <!-- Abstract dystopian graphic -->
+                        <div class="aspect-square glass-card rounded-full flex items-center justify-center relative overflow-hidden group">
+                            <div class="absolute inset-0 border-[20px] border-gray-900 rounded-full group-hover:border-accent transition-colors duration-700"></div>
+                            <div class="absolute inset-4 border border-dashed border-gray-700 rounded-full animate-[spin_20s_linear_infinite]"></div>
+                            <div class="font-heading text-7xl font-bold text-gray-800 group-hover:text-accent transition-colors duration-500">W</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GRUNDSÄTZE -->
+        <section id="grundsaetze" class="min-h-screen py-24 bg-darker relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-20 reveal">
+                    <p class="font-mono text-accent text-sm tracking-[0.3em] mb-2">DOKTRIN</p>
+                    <h2 class="font-heading text-4xl md:text-5xl font-bold text-white uppercase">Unsere Grundsätze</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Card 1 -->
+                    <div class="glass-card p-8 rounded-sm reveal border-t-2 border-t-transparent hover:border-t-accent">
+                        <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">01</div>
+                        <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Disziplin</h3>
+                        <p class="text-gray-400 font-light leading-relaxed mb-6">
+                            Ohne Disziplin sind wir chaotisch und schwach. Der Einzelne ordnet seine Impulse dem höheren Ziel unter. Haltung bewahren. Regeln befolgen.
+                        </p>
+                        <div class="h-px w-full bg-gradient-to-r from-accent to-transparent"></div>
+                    </div>
+                    
+                    <!-- Card 2 -->
+                    <div class="glass-card p-8 rounded-sm reveal delay-100 border-t-2 border-t-transparent hover:border-t-accent">
+                        <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">02</div>
+                        <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Gemeinschaft</h3>
+                        <p class="text-gray-400 font-light leading-relaxed mb-6">
+                            Zusammenhalt ist unsere Rüstung. Wer sich isoliert, ist verletzlich. Wer nicht für uns ist, steht gegen uns. Wir atmen als ein Organismus.
+                        </p>
+                        <div class="h-px w-full bg-gradient-to-r from-accent to-transparent"></div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="glass-card p-8 rounded-sm reveal delay-200 border-t-2 border-t-transparent hover:border-t-accent">
+                        <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">03</div>
+                        <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Handeln</h3>
+                        <p class="text-gray-400 font-light leading-relaxed mb-6">
+                            Gedanken allein formen keine neue Welt. Taten sind das Maß unserer Ergebenheit. Wer zögert, verrät die Bewegung. Führe Befehle aus.
+                        </p>
+                        <div class="h-px w-full bg-gradient-to-r from-accent to-transparent"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. GEMEINSCHAFT -->
+        <section id="gemeinschaft" class="py-24 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 md:order-1 glass-card p-10 relative overflow-hidden group reveal">
+                        <div class="scan-line-horizontal hidden group-hover:block"></div>
+                        <h3 class="font-heading text-3xl font-bold text-white mb-4 relative z-10 group-hover:text-accent transition-colors">Das Kollektiv</h3>
+                        <p class="text-gray-300 relative z-10 mb-6">
+                            Wir tragen alle das weiße Hemd. Es löscht die Unterschiede aus. Es gibt kein Arm oder Reich mehr, kein Beliebt oder Unbeliebt. Wir sind gleich.
+                        </p>
+                        <!-- Hidden Truth overlay on hover -->
+                        <div class="absolute inset-0 bg-black/90 p-10 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                            <h3 class="font-mono text-2xl font-bold text-accent mb-4 glitch-text" data-text="VERLUST DER IDENTITÄT">VERLUST DER IDENTITÄT</h3>
+                            <ul class="font-mono text-sm text-red-400 space-y-2">
+                                <li>> Anpassungsdruck maximiert.</li>
+                                <li>> Individuelles Denken: unerwünscht.</li>
+                                <li>> Abweichler werden sozial isoliert.</li>
+                                <li>> Überwachung durch Mitläufer aktiv.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="order-1 md:order-2 reveal delay-200">
+                        <h2 class="font-heading text-4xl md:text-5xl font-bold text-white mb-6">Einer für alle.</h2>
+                        <p class="text-xl text-gray-400 font-light">
+                            Die Gemeinschaft gibt dir Stärke. Sie gibt dir einen Platz. Aber verwechsle Zugehörigkeit nicht mit Freiheit. In der Welle schwimmst du mit, oder du ertrinkst.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CHRONIK -->
+        <section id="chronik" class="py-24 bg-darker relative">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="font-heading text-4xl md:text-5xl font-bold text-center text-white mb-16 reveal uppercase">Die Eskalation</h2>
+                
+                <div class="relative wrap overflow-hidden p-10 h-full">
+                    <div class="absolute border-opacity-20 border-gray-700 h-full border timeline-line left-1/2 -ml-[1px]"></div>
+                    
+                    <!-- Phase 1 -->
+                    <div class="mb-12 flex justify-between items-center w-full right-timeline reveal">
+                        <div class="order-1 w-5/12"></div>
+                        <div class="z-20 flex items-center order-1 bg-gray-800 shadow-xl w-8 h-8 rounded-full border-2 border-gray-400">
+                            <h1 class="mx-auto font-semibold text-sm text-white">1</h1>
+                        </div>
+                        <div class="order-1 glass-card rounded-sm shadow-xl w-5/12 px-6 py-4">
+                            <h3 class="mb-2 font-heading font-bold text-white text-xl">Neugier</h3>
+                            <p class="text-sm leading-snug tracking-wide text-gray-400 text-opacity-100">Ein simples Projekt über Autokratie. Wir lernen Haltung und diszipliniertes Aufstehen. Es fühlt sich wie ein Spiel an.</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline reveal">
+                        <div class="order-1 w-5/12"></div>
+                        <div class="z-20 flex items-center order-1 bg-gray-800 shadow-xl w-8 h-8 rounded-full border-2 border-gray-400">
+                            <h1 class="mx-auto text-white font-semibold text-sm">2</h1>
+                        </div>
+                        <div class="order-1 glass-card rounded-sm shadow-xl w-5/12 px-6 py-4 text-right">
+                            <h3 class="mb-2 font-heading font-bold text-white text-xl">Begeisterung</h3>
+                            <p class="text-sm leading-snug tracking-wide text-gray-400 text-opacity-100">Das Logo entsteht. Wir fühlen uns mächtig, verbunden. Außenseiter finden plötzlich Anschluss. Die Welle wächst.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 3 -->
+                    <div class="mb-12 flex justify-between items-center w-full right-timeline reveal">
+                        <div class="order-1 w-5/12"></div>
+                        <div class="z-20 flex items-center order-1 bg-gray-900 shadow-xl w-8 h-8 rounded-full border-2 border-red-800">
+                            <h1 class="mx-auto font-semibold text-sm text-red-500">3</h1>
+                        </div>
+                        <div class="order-1 glass-card border-r-4 border-r-red-900 rounded-sm shadow-xl w-5/12 px-6 py-4">
+                            <h3 class="mb-2 font-heading font-bold text-red-400 text-xl">Ausbreitung</h3>
+                            <p class="text-sm leading-snug tracking-wide text-gray-400 text-opacity-100">Flugblätter, Graffitis. Wer nicht das weiße Hemd trägt, wird auf dem Pausenhof ignoriert oder schikaniert. Die Gruppendynamik wird aggressiv.</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline reveal">
+                        <div class="order-1 w-5/12"></div>
+                        <div class="z-20 flex items-center order-1 bg-black shadow-xl w-8 h-8 rounded-full border-2 border-accent">
+                            <h1 class="mx-auto text-accent font-semibold text-sm animate-pulse">4</h1>
+                        </div>
+                        <div class="order-1 bg-black border border-accent rounded-sm shadow-xl w-5/12 px-6 py-4 text-right">
+                            <h3 class="mb-2 font-heading font-bold text-accent text-xl">Kontrolle</h3>
+                            <p class="text-sm leading-snug tracking-wide text-gray-400 text-opacity-100">Körperliche Gewalt gegen Kritiker. Leibwächter für den Führer. Die Welle ist außer Kontrolle. Das Experiment ist Realität geworden.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. MITGLIEDERBEREICH (DASHBOARD) -->
+        <section id="dashboard" class="py-24 relative min-h-screen flex items-center">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div class="border border-gray-800 bg-[#0a0a0a] p-1 font-mono text-xs md:text-sm shadow-[0_0_50px_rgba(139,0,0,0.15)] relative reveal">
+                    <!-- Dashboard Header -->
+                    <div class="flex justify-between items-center border-b border-gray-800 p-4 bg-gray-900/50">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                            <span class="text-red-500 tracking-widest uppercase">Intranet :: Akte_W</span>
+                        </div>
+                        <div class="text-gray-500">
+                            AUTH_LVL: <span class="text-white">WÄCHTER</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-1 p-1 bg-gray-800">
+                        <!-- Profile -->
+                        <div class="bg-[#0a0a0a] p-6 col-span-1 border border-gray-900 relative group">
+                            <div class="scan-line-horizontal hidden group-hover:block"></div>
+                            <h4 class="text-gray-500 mb-4 border-b border-gray-800 pb-2">PROFIL</h4>
+                            <div class="flex items-start space-x-4">
+                                <div class="w-20 h-24 bg-gray-800 border border-gray-700 flex items-center justify-center relative overflow-hidden">
+                                    <svg class="w-10 h-10 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                                    <div class="absolute inset-0 bg-accent mix-blend-color opacity-20"></div>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400">ID: <span class="text-white">#7399-W</span></p>
+                                    <p class="text-gray-400">Status: <span class="text-green-500">AKTIV</span></p>
+                                    <p class="text-gray-400 mt-2">Treuepunkte: <span class="text-accent font-bold">142</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Directives / Activity -->
+                        <div class="bg-[#0a0a0a] p-6 col-span-1 md:col-span-2 border border-gray-900">
+                            <h4 class="text-gray-500 mb-4 border-b border-gray-800 pb-2">AKTUELLE DIREKTIVEN</h4>
+                            <ul class="space-y-3 text-gray-300">
+                                <li class="flex items-center space-x-2">
+                                    <span class="text-accent">></span>
+                                    <span>Versammlung in der Aula. Anwesenheitspflicht. (18:00 Uhr)</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <span class="text-accent">></span>
+                                    <span>Meldung von Abweichlern an Komitee erforderlich.</span>
+                                </li>
+                                <li class="flex items-center space-x-2 text-gray-500">
+                                    <span>></span>
+                                    <span class="line-through">Individuelle Diskussionen (Temporär blockiert)</span>
+                                </li>
+                            </ul>
+                            
+                            <div class="mt-8 pt-4 border-t border-gray-800">
+                                <h4 class="text-gray-500 mb-2">SYSTEM-PROTOKOLL</h4>
+                                <div class="bg-black p-3 h-24 overflow-y-hidden border border-gray-900 text-xs text-gray-500">
+                                    <p>08:12 - Mitglied #442 sanktioniert wegen fehlendem Gruß.</p>
+                                    <p>09:45 - Neue Rekruten bestätigt: 12.</p>
+                                    <p class="text-red-500 glitch-text" data-text="11:30 - WARNUNG: Unruhen auf dem Hof detektiert.">11:30 - WARNUNG: Unruhen auf dem Hof detektiert.</p>
+                                    <p>11:31 - Wächter-Einheit entsandt.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. ANALYSE / WARNSIGNALE -->
+        <section id="analyse" class="py-24 bg-black relative z-20">
+            <!-- Red glow at the bottom to signify danger/climax -->
+            <div class="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-accent to-transparent opacity-10 pointer-events-none"></div>
+            
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+                <h2 class="font-heading text-4xl md:text-6xl font-bold text-white mb-6 uppercase">Hinter der Fassade</h2>
+                <p class="text-xl text-gray-400 font-light mb-16 max-w-2xl mx-auto">
+                    Die Welle zeigt, wie schnell demokratische Grundwerte erodieren können. Was als Gemeinschaftssinn verkauft wird, ist der Nährboden für Faschismus.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 text-left">
+                    <div>
+                        <h3 class="font-heading text-2xl text-accent mb-3 uppercase">Gruppenzwang</h3>
+                        <p class="text-gray-300">Der Wunsch dazuzugehören ist menschlich. Die Welle instrumentalisiert diesen Wunsch. Wer sich anpasst, wird belohnt. Wer hinterfragt, wird bestraft. Die Angst vor Ausgrenzung erzwingt Konformität.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-2xl text-accent mb-3 uppercase">Autoritätsgläubigkeit</h3>
+                        <p class="text-gray-300">Die Verantwortung wird an eine Leitfigur (den Lehrer) abgegeben. Kritisches Denken wird durch blinden Gehorsam ersetzt. Befehle werden nicht moralisch geprüft, sondern mechanisch ausgeführt.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-2xl text-accent mb-3 uppercase">Verlust der Individualität</h3>
+                        <p class="text-gray-300">Uniformen, gemeinsame Gesten (der Gruß) und strikte Regeln löschen die eigene Identität aus. Der Mensch wird zu einem anonymen Rädchen im System der Bewegung.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-2xl text-accent mb-3 uppercase">Feindbilder</h3>
+                        <p class="text-gray-300">Ein totalitäres System braucht einen Feind, um den inneren Zusammenhalt zu stärken. In der Welle werden Nicht-Mitglieder schnell zu Verrätern oder Gegnern deklariert, die bekämpft werden müssen.</p>
+                    </div>
+                </div>
+
+                <div class="mt-24 p-8 border border-accent/30 bg-accent/5 rounded-sm reveal">
+                    <p class="font-mono text-lg text-white font-bold mb-2 glitch-text" data-text="ES KANN WIEDER PASSIEREN.">ES KANN WIEDER PASSIEREN.</p>
+                    <p class="text-gray-400 font-mono text-sm">Die Mechanismen der Manipulation veralten nie. Wachsamkeit ist die einzige Verteidigung.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-darker py-8 border-t border-gray-900 text-center relative z-20">
+            <p class="font-mono text-gray-600 text-xs">
+                Fiktives Schulprojekt basierend auf "Die Welle" von Morton Rhue.<br>
+                <span class="text-gray-800">SYSTEM END</span>
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. MOBILE MENU TOGGLE ---
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+            const navLinks = menu.querySelectorAll('a');
+
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                });
+            });
+
+            // --- 2. SCROLL REVEAL ANIMATIONS ---
+            const revealElements = document.querySelectorAll('.reveal');
+            
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target); // Animate only once
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.15,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // --- 3. DYNAMIC BACKGROUND INTENSITY (The deeper you scroll, the darker/redder it gets) ---
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            
+            window.addEventListener('scroll', () => {
+                const scrollPos = window.scrollY;
+                const scrollPercent = scrollPos / docHeight;
+                
+                // Add dark red tint based on scroll depth
+                const maxRed = 15; // Max RGB red value for background
+                const r = Math.floor(scrollPercent * maxRed);
+                document.body.style.backgroundColor = `rgb(${r}, 0, 0)`;
+
+                // Intensify scanlines slightly
+                const scanlines = document.getElementById('scanlines');
+                if(scanlines) {
+                    scanlines.style.opacity = 0.6 + (scrollPercent * 0.3);
+                }
+            });
+
+            // --- 4. CANVAS FOG / PARTICLE SYSTEM ---
+            const canvas = document.getElementById('fog-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    // Move slowly upwards
+                    this.vy = Math.random() * -1 - 0.2; 
+                    this.size = Math.random() * 3 + 1;
+                    // Grey to dark red colors for embers/ash look
+                    const isRed = Math.random() > 0.8;
+                    this.color = isRed ? `rgba(139, 0, 0, ${Math.random() * 0.5})` : `rgba(100, 100, 100, ${Math.random() * 0.3})`;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Reset if out of bounds (top or sides)
+                    if (this.y < -10) {
+                        this.y = height + 10;
+                        this.x = Math.random() * width;
+                    }
+                    if (this.x < -10 || this.x > width + 10) {
+                        this.vx *= -1;
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                // Number of particles depends on screen size roughly
+                const count = Math.min(Math.floor(width * height / 15000), 100);
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            initParticles();
+            animate();
+        });
+    </script>
+</body>
+</html>
