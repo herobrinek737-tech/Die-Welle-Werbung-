@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIE WELLE | Ordnung. Gemeinschaft. Disziplin.</title>
+    <meta name="description" content="Eine dystopische Rekonstruktion der Bewegung 'Die Welle'.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        darker: '#000000',
+                        accent: '#8b0000',
+                        accentHover: '#b30000',
+                        terminal: '#ff2a2a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Oswald', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root { --glitch-color-1: rgba(255, 0, 0, 0.8); --glitch-color-2: rgba(0, 255, 255, 0.8); }
+        body { background-color: var(--dark); color: #e5e5e5; overflow-x: hidden; transition: background-color 0.5s ease; }
+
+        #grain-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 100; opacity: 0.05; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
+        #scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; opacity: 0.6; animation: panScanlines 10s linear infinite; }
+        #vignette { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 98; box-shadow: inset 0 0 150px rgba(0,0,0,0.95); }
+        #fog-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; opacity: 0.4; }
+
+        @keyframes panScanlines { 0% { background-position: 0 0; } 100% { background-position: 0 100vh; } }
+
+        .glass-nav { background: rgba(5, 5, 5, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-card { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(139, 0, 0, 0.5); box-shadow: 0 0 20px rgba(139, 0, 0, 0.2); transform: translateY(-5px); }
+        
+        .glitch-text { position: relative; display: inline-block; }
+        .glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+        .glitch-text::before { left: 2px; text-shadow: -2px 0 var(--glitch-color-1); animation: glitch-anim-1 2s infinite linear alternate-reverse; z-index: -1; }
+        .glitch-text::after { left: -2px; text-shadow: -2px 0 var(--glitch-color-2); animation: glitch-anim-2 3s infinite linear alternate-reverse; z-index: -2; }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        .timeline-line { width: 2px; background: linear-gradient(to bottom, #333 0%, var(--accent) 100%); }
+        .scan-line-horizontal { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: rgba(255, 0, 0, 0.5); animation: scanScreen 4s linear infinite; pointer-events: none; }
+        @keyframes scanScreen { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .bg-wave { position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background: radial-gradient(circle at center, rgba(139,0,0,0.05) 0%, rgba(0,0,0,0) 50%); animation: rotateWave 30s linear infinite; z-index: 1; pointer-events: none; }
+        @keyframes rotateWave { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="relative text-gray-300">
+
+    <div id="grain-overlay"></div>
+    <div id="scanlines"></div>
+    <div id="vignette"></div>
+    <canvas id="fog-canvas"></canvas>
+
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#home" class="font-heading font-bold text-2xl tracking-widest text-white hover-glitch">DIE WELLE</a>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-mono tracking-wider">
+                    <a href="#bewegung" class="hover:text-accent transition-colors">BEWEGUNG</a>
+                    <a href="#rekrutierung" class="text-accent font-bold animate-pulse">BEITRETEN</a>
+                    <a href="#dashboard" class="hover:text-red-400 transition-colors">[AKTE_W]</a>
+                    <a href="#analyse" class="hover:text-accent transition-colors">ANALYSE</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10">
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
+            <div class="bg-wave"></div>
+            <div class="z-10 max-w-4xl">
+                <h1 class="font-heading font-bold text-5xl md:text-8xl tracking-tighter mb-6 text-white glitch-text uppercase" data-text="Ordnung. Gemeinschaft. Disziplin.">Ordnung.<br>Gemeinschaft.<br>Disziplin.</h1>
+                <p class="font-mono text-lg md:text-xl text-gray-400 tracking-widest mt-8 reveal">EINE BEWEGUNG BEGINNT MIT EINER IDEE.</p>
+            </div>
+        </section>
+
+        <!-- NEUE SEITE: REKRUTIERUNG -->
+        <section id="rekrutierung" class="min-h-screen py-24 flex items-center bg-darker/50">
+            <div class="max-w-3xl mx-auto px-4 text-center reveal">
+                <h2 class="font-heading text-4xl md:text-6xl font-bold text-white mb-8">Werde Teil der Welle</h2>
+                <p class="text-gray-400 mb-12">Deine Identität ist nur eine Bürde. Im Kollektiv findest du wahre Größe. Unterschreibe den Pakt der Gleichheit.</p>
+                
+                <form class="glass-card p-8 md:p-12 space-y-6 text-left" onsubmit="return false;">
+                    <div>
+                        <label class="block font-mono text-xs text-accent mb-2">IDENTIFIKATIONS-NUMMER / NAME</label>
+                        <input type="text" class="w-full bg-black border border-gray-700 p-3 text-white focus:border-accent outline-none" placeholder="[ANONYM]">
+                    </div>
+                    <div>
+                        <label class="block font-mono text-xs text-accent mb-2">ABTEILUNG</label>
+                        <select class="w-full bg-black border border-gray-700 p-3 text-white focus:border-accent outline-none">
+                            <option>Propaganda & Information</option>
+                            <option>Disziplin & Überwachung</option>
+                            <option>Logistik & Gemeinschaft</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" class="accent-accent">
+                        <span class="text-sm font-mono text-gray-400">Ich schwöre Loyalität zur Bewegung.</span>
+                    </div>
+                    <button class="w-full bg-accent hover:bg-red-900 transition-colors py-4 font-heading font-bold text-white tracking-widest uppercase">Pakt akzeptieren</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ... Weitere Sektionen (Bewegung, Grundsätze, etc. wie bisher) ... -->
+
+        <section id="analyse" class="py-24 bg-black relative z-20">
+            <div class="max-w-5xl mx-auto px-4 text-center reveal">
+                <h2 class="font-heading text-4xl font-bold text-white mb-6 uppercase">Hinter der Fassade</h2>
+                <p class="text-gray-400">Die Mechanismen der Manipulation sind real.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('active'); }));
+        revealElements.forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
