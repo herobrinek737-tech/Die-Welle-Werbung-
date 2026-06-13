@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GORDON HIGH | Die Welle System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        darker: '#000000',
+                        accent: '#8b0000',
+                        accentHover: '#b30000',
+                        terminal: '#ff2a2a',
+                        terminalDark: '#800000'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Oswald', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'blink': 'blink 1s step-end infinite',
+                    },
+                    keyframes: {
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+            animation: crt-flicker 0.15s infinite;
+        }
+
+        /* Scanline Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.25) 50%,
+                rgba(0,0,0,0.25)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.6;
+            animation: scanlines-scroll 10s linear infinite;
+        }
+
+        /* CRT Vignette */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0.95) 100%);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 49;
+        }
+
+        /* Chromatische Aberration */
+        h1, h2, h3, .font-heading {
+            text-shadow: 
+                2px 0 1px rgba(255, 0, 0, 0.6), 
+                -2px 0 1px rgba(0, 255, 255, 0.6),
+                0 0 10px rgba(139, 0, 0, 0.4);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #8b0000; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff2a2a; }
+
+        .view { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .view.active { display: flex; opacity: 1; }
+        .dashboard-view.active { display: block; opacity: 1; }
+
+        input:-webkit-autofill {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px #050505 inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        .terminal-text { 
+            text-shadow: 
+                2px 0 1px rgba(255, 42, 42, 0.5), 
+                -2px 0 1px rgba(0, 255, 255, 0.4),
+                0 0 12px rgba(255, 42, 42, 0.9); 
+        }
+        
+        .glass-panel { background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(139, 0, 0, 0.3); }
+
+        @keyframes scanlines-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
+        @keyframes crt-flicker {
+            0% { opacity: 0.98; }
+            5% { opacity: 0.94; }
+            10% { opacity: 0.99; }
+            15% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes crt-turn-on {
+            0% { transform: scale(1, 0.001) translate3d(0, 0, 0); filter: brightness(10); opacity: 0; }
+            20% { transform: scale(1, 0.001) translate3d(0, 0, 0); filter: brightness(10); opacity: 1; }
+            50% { transform: scale(1, 1) translate3d(0, 0, 0); filter: brightness(1.5); opacity: 1; }
+            100% { transform: scale(1, 1) translate3d(0, 0, 0); filter: brightness(1); opacity: 1; }
+        }
+
+        main {
+            animation: crt-turn-on 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            transform-origin: center center;
+        }
+
+        .wave-logo {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            border: 3px solid #8b0000;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .wave-line {
+            width: 120%; height: 100%;
+            border-bottom: 4px solid #8b0000;
+            border-radius: 50%;
+            position: absolute;
+            top: -30%;
+        }
+
+        /* Messenger Chat Bubble */
+        .chat-bubble { padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; width: fit-content; max-width: 85%; line-height: 1.4; }
+        .chat-system { background: rgba(255, 42, 42, 0.15); border-left: 2px solid #ff2a2a; color: #ff2a2a; }
+        .chat-incoming { background: #1a1a1a; border: 1px solid #333; color: #ddd; }
+        .chat-outgoing { background: rgba(139, 0, 0, 0.2); border: 1px solid #8b0000; color: #fff; margin-left: auto; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col relative">
+
+    <canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full z-0 opacity-40"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <main class="relative z-10 w-full flex-grow flex flex-col items-center justify-center min-h-screen p-4">
+
+        <!-- ==================== VIEW 1: LOGIN ==================== -->
+        <section id="view-login" class="view active w-full max-w-md">
+            <div class="glass-panel w-full p-8 shadow-2xl shadow-accent/20">
+                <div class="text-center mb-6">
+                    <div class="wave-logo"><div class="wave-line"></div></div>
+                    <h1 class="font-heading text-4xl font-bold tracking-widest text-white mb-2 uppercase">Die Welle</h1>
+                    <div class="h-1 w-16 bg-accent mx-auto mb-4"></div>
+                    <p class="font-mono text-xs text-gray-400 uppercase tracking-widest">Gordon High Intranet</p>
+                </div>
+
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label class="block font-mono text-xs text-gray-500 mb-2 uppercase">Identifikation</label>
+                        <input type="text" id="login-id-input" required class="w-full bg-darker border border-gray-800 focus:border-accent text-white font-mono p-3 outline-none transition-colors" placeholder="Z.B. Ben, Robert, Laurie, David...">
+                    </div>
+                    <div>
+                        <label class="block font-mono text-xs text-gray-500 mb-2 uppercase">Passwort</label>
+                        <input type="password" class="w-full bg-darker border border-gray-800 focus:border-accent text-white font-mono p-3 outline-none transition-colors" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-accent hover:bg-terminal transition-colors py-4 font-heading font-bold text-white tracking-widest uppercase mt-4">Autorisierung Anfordern</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: TERMINAL ANIMATION ==================== -->
+        <section id="view-terminal" class="view w-full h-full flex flex-col justify-center items-start max-w-4xl px-8">
+            <div id="terminal-output" class="font-mono text-terminal text-lg md:text-xl terminal-text leading-relaxed tracking-wider"></div>
+            <span class="font-mono text-terminal text-xl animate-blink mt-2">_</span>
+        </section>
+
+        <!-- ==================== VIEW 4: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="dashboard-view view w-full min-h-screen py-8 px-4 md:px-8">
+            
+            <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end mb-8 border-b border-accent/40 pb-4">
+                <div>
+                    <h1 class="font-heading text-3xl md:text-5xl font-bold tracking-widest text-white uppercase flex items-center gap-4">
+                        <div class="wave-logo m-0 w-10 h-10 border-2"><div class="wave-line border-b-2"></div></div>
+                        Gordon High Netz
+                    </h1>
+                    <p class="font-mono text-terminal text-sm mt-1 uppercase tracking-widest flex items-center">
+                        <span class="w-2 h-2 bg-terminal rounded-full mr-2 animate-pulse"></span>
+                        Status: Geschichtsexperiment Aktiv
+                    </p>
+                </div>
+                <button onclick="logout()" class="mt-4 md:mt-0 font-mono text-xs text-gray-500 hover:text-terminal transition-colors uppercase border border-gray-800 px-4 py-2 hover:border-terminal">
+                    [ Sitzung beenden ]
+                </button>
+            </header>
+
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+                
+                <!-- Left: Profile & Stats -->
+                <div class="space-y-6">
+                    <div class="glass-panel p-6 border-l-4" id="dash-profile-card" style="border-color: #8b0000;">
+                        <h2 class="font-mono text-xs text-gray-500 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2 flex justify-between">
+                            Mitgliedskarte
+                            <span id="dash-status" class="text-terminal animate-pulse">Konform</span>
+                        </h2>
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-16 h-16 bg-darker border-2 flex items-center justify-center transition-colors relative" id="dash-avatar-border" style="border-color: #8b0000;">
+                                <span class="font-heading text-2xl font-bold text-white" id="dash-avatar-letter">W</span>
+                                <span id="dash-helper-x" class="absolute hidden text-red-600 font-bold text-3xl opacity-80" style="transform: rotate(-15deg);">X</span>
+                            </div>
+                            <div>
+                                <div class="font-mono text-lg text-white uppercase" id="dash-username">Schüler #???</div>
+                                <div class="font-mono text-xs uppercase transition-colors" id="dash-rank" style="color: #ff2a2a;">Lade Rang...</div>
+                            </div>
+                        </div>
+                        <div class="space-y-3 mt-6">
+                            <div>
+                                <div class="flex justify-between font-mono text-xs mb-1">
+                                    <span class="text-gray-400">Gemeinschaftssinn</span>
+                                    <span class="text-white" id="dash-loyalty-val">0%</span>
+                                </div>
+                                <div class="w-full bg-darker h-2"><div id="dash-loyalty-bar" class="bg-accent h-2 w-[0%] transition-all duration-1000"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between font-mono text-xs mb-1">
+                                    <span class="text-gray-400">Disziplin</span>
+                                    <span class="text-white" id="dash-activity-val">0%</span>
+                                </div>
+                                <div class="w-full bg-darker h-2"><div id="dash-activity-bar" class="bg-gray-500 h-2 w-[0%] transition-all duration-1000"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 text-center">
+                            <div class="font-heading text-3xl font-bold text-white mb-1">241</div>
+                            <div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest">Rekrutierte Schüler</div>
+                        </div>
+                        <div class="glass-panel p-4 text-center border-t-2 border-t-terminal">
+                            <div class="font-heading text-3xl font-bold text-terminal mb-1">The Grapevine</div>
+                            <div class="font-mono text-[10px] text-terminal uppercase tracking-widest">Bedrohungsstufe: Hoch</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle: Live Feed -->
+                <div class="glass-panel p-0 lg:col-span-1 flex flex-col h-[500px]">
+                    <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-darker/50">
+                        <h2 class="font-mono text-xs text-gray-400 uppercase tracking-widest">Schul-Überwachungsfeed</h2>
+                        <span class="text-xs font-mono text-terminal animate-pulse">LIVE</span>
+                    </div>
+                    <div id="live-feed" class="flex-grow overflow-y-auto p-4 space-y-3 font-mono text-xs"></div>
+                </div>
+
+                <!-- Right: Directives -->
+                <div class="glass-panel p-6 lg:col-span-1 bg-gradient-to-b from-transparent to-accent/10">
+                    <h2 class="font-mono text-xs text-accent uppercase tracking-widest mb-6 border-b border-accent/30 pb-2">Die Leitsätze</h2>
+                    <ul class="space-y-6">
+                        <li class="relative pl-6">
+                            <span class="absolute left-0 top-0 font-heading text-xl font-bold text-terminal">I.</span>
+                            <h3 class="font-heading text-lg font-bold text-white uppercase tracking-wide">Macht durch Disziplin</h3>
+                            <p class="font-sans text-sm text-gray-400 mt-1">Haltung annehmen. Antworten beginnen mit "Mr. Ross". Disziplin ist der erste Schritt zur Macht.</p>
+                        </li>
+                        <li class="relative pl-6">
+                            <span class="absolute left-0 top-0 font-heading text-xl font-bold text-terminal">II.</span>
+                            <h3 class="font-heading text-lg font-bold text-white uppercase tracking-wide">Macht durch Gemeinschaft</h3>
+                            <p class="font-sans text-sm text-gray-400 mt-1">Ihr seid keine Konkurrenten mehr. Die Welle ist eure Familie. Niemand bleibt zurück.</p>
+                        </li>
+                        <li class="relative pl-6">
+                            <span class="absolute left-0 top-0 font-heading text-xl font-bold text-terminal">III.</span>
+                            <h3 class="font-heading text-lg font-bold text-white uppercase tracking-wide">Macht durch Handeln</h3>
+                            <p class="font-sans text-sm text-gray-400 mt-1">Zeigt den Gruß. Werbt neue Mitglieder. Eine Bewegung ohne Tatkraft existiert nicht.</p>
+                        </li>
+                    </ul>
+                    <div class="mt-8 pt-4 border-t border-gray-800 text-center">
+                        <button class="bg-darker border border-terminal text-terminal hover:bg-terminal hover:text-white transition-colors w-full py-3 font-mono text-xs uppercase tracking-widest" onclick="addFeedItem('System-Meldung: Verstoß wurde an den Aufsichtsrat weitergeleitet.')">
+                            Abweichler Melden
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== FAKE MESSENGER WIDGET ==================== -->
+    <div id="messenger-widget" class="fixed bottom-4 right-4 z-50 flex flex-col items-end hidden">
+        <div id="chat-box" class="hidden w-80 h-96 glass-panel mb-2 flex flex-col shadow-2xl shadow-accent/20">
+            <div class="p-3 border-b border-gray-800 bg-darker flex justify-between items-center">
+                <span class="font-mono text-xs text-terminal tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 bg-terminal rounded-full animate-pulse"></span> INTRA-COMM
+                </span>
+                <button onclick="toggleChat()" class="text-gray-500 hover:text-white font-mono font-bold">_</button>
+            </div>
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto font-mono text-[11px] flex flex-col">
+                <!-- Messages injected via JS -->
+            </div>
+            <div class="p-2 border-t border-gray-800 bg-darker/80">
+                <form id="chat-form" class="flex gap-2">
+                    <input type="text" id="chat-input" required class="flex-grow bg-darker border border-gray-700 text-white p-2 text-xs outline-none focus:border-accent font-mono" placeholder="Nachricht...">
+                    <button type="submit" class="bg-accent text-white px-3 hover:bg-terminal transition-colors">></button>
+                </form>
+            </div>
+        </div>
+        <button id="chat-toggle-btn" onclick="toggleChat()" class="bg-darker border border-accent text-accent px-4 py-3 font-mono text-xs hover:bg-accent hover:text-white transition-colors uppercase shadow-lg flex items-center gap-2">
+            <span class="animate-pulse">Nachrichten</span> <span id="msg-badge" class="bg-terminal text-black px-2 py-0.5 font-bold rounded-sm">1</span>
+        </button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // --- View & Logout Management ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            // Hide messenger in Login, show in Dashboard
+            if(viewId === 'view-dashboard') {
+                document.getElementById('messenger-widget').classList.remove('hidden');
+            } else {
+                document.getElementById('messenger-widget').classList.add('hidden');
+                document.getElementById('chat-box').classList.add('hidden');
+            }
+        }
+
+        function logout() {
+            switchView('view-login');
+            document.getElementById('login-form').reset();
+            document.getElementById('chat-messages').innerHTML = '';
+        }
+
+        // --- Die Welle: Charaktere, IDs & Messenger Logik ---
+        let currentProfileKey = "generic";
+
+        // Datenbank der Charaktere
+        const characterDB = {
+            "ross": {
+                rawId: "Ben Ross", avatarLetter: "R", rank: "Führer / Initiator",
+                loyalty: 100, activity: 100, color: "#00ff00", statusText: "ABSOLUTE KONTROLLE",
+                isHelper: false,
+                terminalOverride: "> WARNUNG: GESCHICHTSLEHRER IDENTIFIZIERT. DIREKTIVEN-KONTROLLE ÜBERTRAGEN.",
+                feedAlert: `[SYSTEM] Mr. Ross hat das Intranet betreten. Alle Schüler erheben sich.`,
+                chatHistory: [
+                    { sender: "Robert Billings", type: "incoming", text: "Mr. Ross, Flur C ist gesichert. Kein Anzeichen von Grapevine-Reportern." },
+                    { sender: "Principal Owens", type: "incoming", text: "Ben, wir müssen reden. Dieses Experiment gerät außer Kontrolle." }
+                ]
+            },
+            "robert": {
+                rawId: "Robert Billings", avatarLetter: "R", rank: "Leibwächter / Aufseher",
+                loyalty: 100, activity: 95, color: "#8b0000", statusText: "SICHERHEITSPROTOKOLL AKTIV",
+                isHelper: true,
+                terminalOverride: null,
+                feedAlert: `[INFO] Leibwächter Robert Billings patrouilliert im Netzwerk.`,
+                chatHistory: [
+                    { sender: "Ben Ross", type: "incoming", text: "Gute Arbeit heute, Robert. Die Disziplin in class ist vorbildlich." },
+                    { sender: "SYSTEM", type: "system", text: "Erinnerung: Melden Sie alle Schüler, die den Gruß verweigern." }
+                ]
+            },
+            "laurie": {
+                rawId: "Laurie Saunders", avatarLetter: "L", rank: "ABWEICHLER / GRAPEVINE REDAKTION",
+                loyalty: 5, activity: 88, color: "#ff8c00", statusText: "FEINDIN DER BEWEGUNG",
+                isHelper: false,
+                terminalOverride: "> KRITISCHER FEHLER: SUBJEKT ARBEITET FÜR 'THE GRAPEVINE'. NICHT KONFORM.",
+                feedAlert: `!!! ALARM !!! Verräterin Laurie Saunders loggt sich ein. Konfisziert alle Zeitungen!`,
+                chatHistory: [
+                    { sender: "Carl", type: "incoming", text: "Laurie, wir haben den Drucker im alten Biologie-Raum versteckt. Treffen nach der Schule." },
+                    { sender: "Amy Smith", type: "incoming", text: "Warum musst du immer alles kaputt machen? Die Welle ist toll!" },
+                    { sender: "David Collins", type: "incoming", text: "Hör auf gegen uns zu arbeiten! Du verstehst es einfach nicht." }
+                ]
+            },
+            "david": {
+                rawId: "David Collins", avatarLetter: "D", rank: "Offizier / Football-Captain",
+                loyalty: 85, activity: 90, color: "#8b0000", statusText: "SPORT-DELEGATION",
+                isHelper: false, terminalOverride: null, feedAlert: null,
+                chatHistory: [
+                    { sender: "Brian Ammon", type: "incoming", text: "Das Team spielt viel besser seit der Welle! Wir werden das nächste Spiel gewinnen." },
+                    { sender: "Laurie Saunders", type: "incoming", text: "David, wach auf. Siehst du nicht, dass wir alle manipuliert werden?" }
+                ]
+            },
+            "amy": {
+                rawId: "Amy Smith", avatarLetter: "A", rank: "Engagiertes Mitglied",
+                loyalty: 95, activity: 80, color: "#8b0000", statusText: "KONFORM",
+                isHelper: false, terminalOverride: null, feedAlert: null,
+                chatHistory: [
+                    { sender: "Laurie Saunders", type: "incoming", text: "Amy, bitte, lies den Artikel. Es ist gefährlich." },
+                    { sender: "SYSTEM", type: "system", text: "Ihre Noten in Geschichte haben sich um 15% verbessert. Macht durch Disziplin." }
+                ]
+            },
+            "brian": {
+                rawId: "Brian Ammon", avatarLetter: "B", rank: "Schläger / Einheit",
+                loyalty: 90, activity: 95, color: "#8b0000", statusText: "PHYSISCHE DURCHSETZUNG",
+                isHelper: true, terminalOverride: null, feedAlert: `[WARNUNG] Brian Ammon ist im Netzwerk. Konfliktrisiko erhöht.`,
+                chatHistory: [
+                    { sender: "David Collins", type: "incoming", text: "Vergiss den Gruß nicht beim Training. Der Coach schaut zu." },
+                    { sender: "Robert Billings", type: "incoming", text: "Wir brauchen dich in Flur B. Jemand verteilt Flugblätter." }
+                ]
+            },
+            "brad": {
+                rawId: "Brad", avatarLetter: "B", rank: "Mitglied mit Zweifeln",
+                loyalty: 60, activity: 50, color: "#8b0000", statusText: "BEOBACHTUNG",
+                isHelper: false, terminalOverride: null, feedAlert: null,
+                chatHistory: [
+                    { sender: "SYSTEM", type: "system", text: "Verwarnung: Zögern beim Ausführen des Grußes auf dem Pausenhof." },
+                    { sender: "Robert Billings", type: "incoming", text: "Ich hab dich gesehen. Nächstes Mal machst du den Gruß vernünftig." }
+                ]
+            },
+            "carl": {
+                rawId: "Carl Block", avatarLetter: "C", rank: "Grapevine Redaktion",
+                loyalty: 2, activity: 99, color: "#ff8c00", statusText: "WIDERSTAND",
+                isHelper: false, terminalOverride: "> WARNUNG: SABOTEUR DETEKTIERT.", feedAlert: `[ALARM] Carl Block gesichtet. Schützt die Pinnwände!`,
+                chatHistory: [
+                    { sender: "Alex Cooper", type: "incoming", text: "Die Spezialausgabe ist gedruckt. Wir müssen sie nur noch verteilen." },
+                    { sender: "Laurie Saunders", type: "incoming", text: "Treffen wir uns im Biologie-Raum. Ich habe den Leitartikel fertig." }
+                ]
+            },
+            "owens": {
+                rawId: "Principal Owens", avatarLetter: "O", rank: "Direktor",
+                loyalty: 0, activity: 10, color: "#00ff00", statusText: "BEOBACHTER / ADMIN",
+                isHelper: false, terminalOverride: "> SCHULLEITUNG OVERRIDE.", feedAlert: null,
+                chatHistory: [
+                    { sender: "Ben Ross", type: "incoming", text: "Keine Sorge, Direktor. Ich habe das Experiment jederzeit unter Kontrolle." }
+                ]
+            },
+            "generic": {
+                rawId: "Schüler", avatarLetter: "W", rank: "Mitglied der Welle",
+                loyalty: 70, activity: 60, color: "#8b0000", statusText: "KONFORM",
+                isHelper: false, terminalOverride: null, feedAlert: null,
+                chatHistory: [
+                    { sender: "SYSTEM", type: "system", text: "Willkommen im Intranet der Welle." },
+                    { sender: "Aufseher", type: "incoming", text: "Vergiss nicht: Macht durch Disziplin. Meldung bei Regelverstoß ist Pflicht." }
+                ]
+            }
+        };
+
+        function analyzeMemberID(inputString) {
+            let inputLower = String(inputString).toLowerCase();
+            
+            // Finde den passenden Charakter oder setze auf Generic
+            currentProfileKey = "generic";
+            
+            // Erweiterte Erkennung für Ben Ross (inklusive "Ben" und "Ramblers")
+            if (inputLower === "ben" || inputLower.includes("ross") || inputLower.includes("ramblers")) {
+                currentProfileKey = "ross";
+            } else {
+                for (let key in characterDB) {
+                    if (key !== "generic" && key !== "ross" && inputLower.includes(key)) {
+                        currentProfileKey = key;
+                        break;
+                    }
+                }
+            }
+
+            // Kopiere das Template
+            let profile = { ...characterDB[currentProfileKey] };
+
+            // Wenn Generic, füge zufällige ID hinzu
+            if (currentProfileKey === "generic") {
+                let numMatch = inputString.match(/\d+/);
+                let idNumber = numMatch ? parseInt(numMatch[0]) : Math.floor(Math.random() * 800) + 10;
+                profile.rawId = `Schüler #${idNumber}`;
+                profile.loyalty = 50 + (idNumber % 45);
+                profile.activity = 40 + ((idNumber * 7) % 50);
+                if (idNumber % 7 === 0) {
+                    profile.rank = "Helfer (Aufseher)";
+                    profile.isHelper = true;
+                    profile.statusText = "MELDUNGSPFLICHTIG";
+                }
+            } else if (currentProfileKey === "carl" || inputLower.includes("alex")) {
+                // Combine Carl & Alex logic
+                profile = { ...characterDB["carl"] };
+                if (inputLower.includes("alex")) profile.rawId = "Alex Cooper";
+            }
+
+            return profile;
+        }
+
+        async function typeLine(container, lineObj) {
+            return new Promise(resolve => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'mb-2';
+                if(lineObj.color) lineDiv.style.color = lineObj.color;
+                container.appendChild(lineDiv);
+                
+                let i = 0;
+                const typingInterval = setInterval(() => {
+                    lineDiv.textContent += lineObj.text.charAt(i);
+                    i++;
+                    if (i >= lineObj.text.length) {
+                        clearInterval(typingInterval);
+                        setTimeout(resolve, lineObj.delay);
+                    }
+                }, 30);
+            });
+        }
+
+        async function triggerLoginProcess(inputString) {
+            const profile = analyzeMemberID(inputString);
+            
+            switchView('view-terminal');
+            const terminal = document.getElementById('terminal-output');
+            terminal.innerHTML = '';
+            
+            let currentTerminalLines = [
+                { text: "> INITIIERE GORDON HIGH INTRANET V.2.1", delay: 300 },
+                { text: `> ÜBERPRÜFE MITGLIEDSKARTE: ${profile.rawId}...`, delay: 800 },
+                { text: `> BERECHNE GEMEINSCHAFTSSINN: ${profile.loyalty}%`, delay: 500 },
+            ];
+
+            if (profile.terminalOverride) {
+                currentTerminalLines.push({ text: profile.terminalOverride, color: profile.color, delay: 600 });
+            } else {
+                currentTerminalLines.push({ text: "> STATUS: ZUGRIFF GEWÄHRT. MACHT DURCH DISZIPLIN.", color: '#00ff00', delay: 400 });
+            }
+            
+            currentTerminalLines.push({ text: "> VERBINDUNG ZUR KLASSE WIRD HERGESTELLT...", delay: 800 });
+
+            for (let i = 0; i < currentTerminalLines.length; i++) {
+                await typeLine(terminal, currentTerminalLines[i]);
+            }
+            
+            // Dashboard UI Update
+            document.getElementById('dash-username').innerText = profile.rawId;
+            document.getElementById('dash-avatar-letter').innerText = profile.avatarLetter;
+            document.getElementById('dash-rank').innerText = "Rang: " + profile.rank;
+            document.getElementById('dash-rank').style.color = profile.color;
+            
+            document.getElementById('dash-status').innerText = profile.statusText;
+            document.getElementById('dash-status').style.color = profile.color;
+            
+            document.getElementById('dash-profile-card').style.borderColor = profile.color;
+            document.getElementById('dash-avatar-border').style.borderColor = profile.color;
+            
+            document.getElementById('dash-loyalty-val').innerText = profile.loyalty + "%";
+            document.getElementById('dash-loyalty-bar').style.width = profile.loyalty + "%";
+            document.getElementById('dash-loyalty-bar').style.backgroundColor = profile.color;
+            
+            document.getElementById('dash-activity-val').innerText = profile.activity + "%";
+            document.getElementById('dash-activity-bar').style.width = profile.activity + "%";
+
+            // Helper "X"
+            const helperX = document.getElementById('dash-helper-x');
+            if(profile.isHelper) {
+                helperX.classList.remove('hidden');
+                document.getElementById('dash-avatar-letter').style.opacity = '0.3';
+            } else {
+                helperX.classList.add('hidden');
+                document.getElementById('dash-avatar-letter').style.opacity = '1';
+            }
+
+            setTimeout(() => {
+                switchView('view-dashboard');
+                initLiveFeed(profile.feedAlert);
+                initMessenger(profile);
+            }, 800);
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('login-id-input').value;
+            triggerLoginProcess(id);
+        });
+
+        // --- Messenger Logik ---
+        let chatOpen = false;
+
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            const box = document.getElementById('chat-box');
+            if(chatOpen) {
+                box.classList.remove('hidden');
+                document.getElementById('msg-badge').innerText = "0"; // Read messages
+                document.getElementById('msg-badge').classList.replace('bg-terminal', 'bg-gray-600');
+                document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function initMessenger(profile) {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = ''; // Clear previous
+
+            let msgCount = profile.chatHistory.length;
+            document.getElementById('msg-badge').innerText = msgCount;
+            document.getElementById('msg-badge').classList.replace('bg-gray-600', 'bg-terminal');
+
+            // Render History
+            profile.chatHistory.forEach(msg => {
+                let cssClass = msg.type === 'system' ? 'chat-system' : 'chat-incoming';
+                let header = msg.type === 'system' ? '' : `<span class="block text-[9px] text-accent font-bold mb-1">${msg.sender}</span>`;
+                
+                chatBox.innerHTML += `
+                    <div class="chat-bubble ${cssClass}">
+                        ${header}
+                        ${msg.text}
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const chatBox = document.getElementById('chat-messages');
+            
+            // User Message
+            chatBox.innerHTML += `
+                <div class="chat-bubble chat-outgoing">
+                    ${text}
+                </div>
+            `;
+            
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Auto System Response based on profile
+            setTimeout(() => {
+                let response = "[SYSTEM] Nachricht wird auf abweichende Tendenzen geprüft.";
+                if(currentProfileKey === "laurie" || currentProfileKey === "carl") {
+                    response = "[WARNUNG] Ihre Kommunikation wird blockiert. Suchen Sie sich nicht zu wehren.";
+                } else if(currentProfileKey === "ross") {
+                    response = "[SYSTEM] Nachricht an die Einheit übermittelt. Heil der Welle.";
+                }
+
+                chatBox.innerHTML += `
+                    <div class="chat-bubble chat-system">
+                        ${response}
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                if(!chatOpen) {
+                    document.getElementById('msg-badge').innerText = "1";
+                    document.getElementById('msg-badge').classList.replace('bg-gray-600', 'bg-terminal');
+                }
+            }, 1500);
+        });
+
+        // --- Live Feed ---
+        let feedInterval;
+        const feedEvents = [
+            "Pausenhof: Wellen-Gruß wird zu 98% korrekt ausgeführt.",
+            "WARNUNG: Schüler ohne Mitgliedskarte im C-Trakt gesichtet.",
+            "Rekrutierung: Das Football-Team ist nun vollständig integriert.",
+            "Meldung: Ein Schüler hat eine Frage gestellt ohne 'Mr. Ross' zu sagen. Disziplinarmaßnahme eingeleitet.",
+            "Aufseher-Bericht: Sonderausgabe von 'The Grapevine' konfisziert.",
+            "Mr. Ross bereitet das nächste Geschichtsprojekt im Auditorium vor.",
+            "Neue Mitgliedskarten mit rotem 'X' wurden an ausgewählte Helfer verteilt.",
+            "Robert Billings meldet verdächtige Unterhaltungen auf der Mädchentoilette.",
+            "Einheit: Sitzordnung in Raum 204 wurde in unter 15 Sekunden perfektioniert."
+        ];
+
+        function initLiveFeed(initialAlert = null) {
+            const feedContainer = document.getElementById('live-feed');
+            feedContainer.innerHTML = ''; 
+            clearInterval(feedInterval);
+
+            addFeedItem("Gordon High Netzwerk verbunden. Lausche auf Schul-Ereignisse...");
+            
+            if(initialAlert) {
+                setTimeout(() => addFeedItem(initialAlert), 1000);
+            }
+
+            feedInterval = setInterval(() => {
+                const randomEvent = feedEvents[Math.floor(Math.random() * feedEvents.length)];
+                addFeedItem(randomEvent);
+            }, 4000);
+        }
+
+        function addFeedItem(text) {
+            const feedContainer = document.getElementById('live-feed');
+            const item = document.createElement('div');
+            const isWarning = text.includes("WARNUNG") || text.includes("Grapevine") || text.includes("ALARM") || text.includes("Verstoß");
+            
+            const time = new Date().toLocaleTimeString('de-DE', { hour12: false });
+            
+            item.className = `p-2 border-l-2 ${isWarning ? 'border-terminal text-terminal bg-terminal/10' : 'border-gray-600 text-gray-300 bg-darker'} animate-pulse-slow transition-all`;
+            item.innerHTML = `<span class="opacity-50 mr-2">[${time}]</span> ${text}`;
+            
+            feedContainer.prepend(item);
+            
+            if(feedContainer.children.length > 10) {
+                feedContainer.removeChild(feedContainer.lastChild);
+            }
+        }
+
+        // Particle Background Logic (Blutroter Staub)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 1) * 1;
+                this.color = `rgba(139, 0, 0, ${Math.random() * 0.5 + 0.1})`;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.y < -10) {
+                    this.y = height + 10;
+                    this.x = Math.random() * width;
+                }
+                if (this.x < -10 || this.x > width + 10) {
+                    this.vx *= -1;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(width * height / 12000), 120);
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>
