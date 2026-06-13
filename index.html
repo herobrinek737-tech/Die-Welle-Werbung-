@@ -6,15 +6,12 @@
     <title>DIE WELLE | Ordnung. Gemeinschaft. Disziplin.</title>
     <meta name="description" content="Eine dystopische Rekonstruktion der Bewegung 'Die Welle'.">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
             theme: {
@@ -231,13 +228,11 @@
 </head>
 <body class="relative text-gray-300">
 
-    <!-- OVERLAYS -->
     <div id="grain-overlay"></div>
     <div id="scanlines"></div>
     <div id="vignette"></div>
     <canvas id="fog-canvas"></canvas>
 
-    <!-- NAVIGATION -->
     <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -253,7 +248,6 @@
                     <a href="#dashboard" class="text-accent hover:text-red-400 transition-colors animate-pulse">[AKTE_W]</a>
                     <a href="#analyse" class="hover:text-accent transition-colors">ANALYSE</a>
                 </div>
-                <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center">
                     <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,7 +257,6 @@
                 </div>
             </div>
         </div>
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden glass-nav border-t border-gray-800 font-mono text-sm">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <a href="#bewegung" class="block px-3 py-2 text-gray-300 hover:text-accent">BEWEGUNG</a>
@@ -277,10 +270,8 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <main class="relative z-10">
 
-        <!-- 1. STARTSEITE -->
         <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
             <div class="bg-wave"></div>
             <div class="z-10 max-w-4xl">
@@ -297,7 +288,6 @@
             </div>
         </section>
 
-        <!-- 2. DIE BEWEGUNG -->
         <section id="bewegung" class="min-h-screen flex items-center py-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
@@ -313,7 +303,6 @@
                         </p>
                     </div>
                     <div class="relative reveal delay-200">
-                        <!-- Abstract dystopian graphic -->
                         <div class="aspect-square glass-card rounded-full flex items-center justify-center relative overflow-hidden group">
                             <div class="absolute inset-0 border-[20px] border-gray-900 rounded-full group-hover:border-accent transition-colors duration-700"></div>
                             <div class="absolute inset-4 border border-dashed border-gray-700 rounded-full animate-[spin_20s_linear_infinite]"></div>
@@ -324,7 +313,6 @@
             </div>
         </section>
 
-        <!-- 3. GRUNDSÄTZE -->
         <section id="grundsaetze" class="min-h-screen py-24 bg-darker relative">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-20 reveal">
@@ -333,7 +321,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Card 1 -->
                     <div class="glass-card p-8 rounded-sm reveal border-t-2 border-t-transparent hover:border-t-accent">
                         <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">01</div>
                         <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Disziplin</h3>
@@ -343,7 +330,6 @@
                         <div class="h-px w-full bg-gradient-to-r from-accent to-transparent"></div>
                     </div>
                     
-                    <!-- Card 2 -->
                     <div class="glass-card p-8 rounded-sm reveal delay-100 border-t-2 border-t-transparent hover:border-t-accent">
                         <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">02</div>
                         <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Gemeinschaft</h3>
@@ -353,7 +339,6 @@
                         <div class="h-px w-full bg-gradient-to-r from-accent to-transparent"></div>
                     </div>
 
-                    <!-- Card 3 -->
                     <div class="glass-card p-8 rounded-sm reveal delay-200 border-t-2 border-t-transparent hover:border-t-accent">
                         <div class="text-4xl text-gray-600 mb-6 font-mono font-bold">03</div>
                         <h3 class="font-heading text-2xl font-bold text-white mb-4 uppercase">Macht durch Handeln</h3>
@@ -366,7 +351,6 @@
             </div>
         </section>
 
-        <!-- 4. GEMEINSCHAFT -->
         <section id="gemeinschaft" class="py-24 relative">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid md:grid-cols-2 gap-12 items-center">
@@ -376,7 +360,6 @@
                         <p class="text-gray-300 relative z-10 mb-6">
                             Wir tragen alle das weiße Hemd. Es löscht die Unterschiede aus. Es gibt kein Arm oder Reich mehr, kein Beliebt oder Unbeliebt. Wir sind gleich.
                         </p>
-                        <!-- Hidden Truth overlay on hover -->
                         <div class="absolute inset-0 bg-black/90 p-10 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                             <h3 class="font-mono text-2xl font-bold text-accent mb-4 glitch-text" data-text="VERLUST DER IDENTITÄT">VERLUST DER IDENTITÄT</h3>
                             <ul class="font-mono text-sm text-red-400 space-y-2">
@@ -398,7 +381,6 @@
             </div>
         </section>
 
-        <!-- 5. CHRONIK -->
         <section id="chronik" class="py-24 bg-darker relative">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="font-heading text-4xl md:text-5xl font-bold text-center text-white mb-16 reveal uppercase">Die Eskalation</h2>
@@ -406,7 +388,6 @@
                 <div class="relative wrap overflow-hidden p-10 h-full">
                     <div class="absolute border-opacity-20 border-gray-700 h-full border timeline-line left-1/2 -ml-[1px]"></div>
                     
-                    <!-- Phase 1 -->
                     <div class="mb-12 flex justify-between items-center w-full right-timeline reveal">
                         <div class="order-1 w-5/12"></div>
                         <div class="z-20 flex items-center order-1 bg-gray-800 shadow-xl w-8 h-8 rounded-full border-2 border-gray-400">
@@ -418,7 +399,6 @@
                         </div>
                     </div>
 
-                    <!-- Phase 2 -->
                     <div class="mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline reveal">
                         <div class="order-1 w-5/12"></div>
                         <div class="z-20 flex items-center order-1 bg-gray-800 shadow-xl w-8 h-8 rounded-full border-2 border-gray-400">
@@ -430,7 +410,6 @@
                         </div>
                     </div>
                     
-                    <!-- Phase 3 -->
                     <div class="mb-12 flex justify-between items-center w-full right-timeline reveal">
                         <div class="order-1 w-5/12"></div>
                         <div class="z-20 flex items-center order-1 bg-gray-900 shadow-xl w-8 h-8 rounded-full border-2 border-red-800">
@@ -442,7 +421,6 @@
                         </div>
                     </div>
 
-                    <!-- Phase 4 -->
                     <div class="mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline reveal">
                         <div class="order-1 w-5/12"></div>
                         <div class="z-20 flex items-center order-1 bg-black shadow-xl w-8 h-8 rounded-full border-2 border-accent">
@@ -457,11 +435,9 @@
             </div>
         </section>
 
-        <!-- 6. MITGLIEDERBEREICH (DASHBOARD) -->
         <section id="dashboard" class="py-24 relative min-h-screen flex items-center">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                 <div class="border border-gray-800 bg-[#0a0a0a] p-1 font-mono text-xs md:text-sm shadow-[0_0_50px_rgba(139,0,0,0.15)] relative reveal">
-                    <!-- Dashboard Header -->
                     <div class="flex justify-between items-center border-b border-gray-800 p-4 bg-gray-900/50">
                         <div class="flex items-center space-x-3">
                             <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
@@ -472,9 +448,7 @@
                         </div>
                     </div>
                     
-                    <!-- Dashboard Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-1 p-1 bg-gray-800">
-                        <!-- Profile -->
                         <div class="bg-[#0a0a0a] p-6 col-span-1 border border-gray-900 relative group">
                             <div class="scan-line-horizontal hidden group-hover:block"></div>
                             <h4 class="text-gray-500 mb-4 border-b border-gray-800 pb-2">PROFIL</h4>
@@ -491,7 +465,6 @@
                             </div>
                         </div>
 
-                        <!-- Directives / Activity -->
                         <div class="bg-[#0a0a0a] p-6 col-span-1 md:col-span-2 border border-gray-900">
                             <h4 class="text-gray-500 mb-4 border-b border-gray-800 pb-2">AKTUELLE DIREKTIVEN</h4>
                             <ul class="space-y-3 text-gray-300">
@@ -524,9 +497,7 @@
             </div>
         </section>
 
-        <!-- 7. ANALYSE / WARNSIGNALE -->
         <section id="analyse" class="py-24 bg-black relative z-20">
-            <!-- Red glow at the bottom to signify danger/climax -->
             <div class="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-accent to-transparent opacity-10 pointer-events-none"></div>
             
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
@@ -561,7 +532,6 @@
             </div>
         </section>
 
-        <!-- Footer -->
         <footer class="bg-darker py-8 border-t border-gray-900 text-center relative z-20">
             <p class="font-mono text-gray-600 text-xs">
                 Fiktives Schulprojekt basierend auf "Die Welle" von Morton Rhue.<br>
@@ -571,7 +541,6 @@
 
     </main>
 
-    <!-- INTERACTIVE SCRIPTS -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- 1. MOBILE MENU TOGGLE ---
@@ -591,7 +560,6 @@
 
             // --- 2. SCROLL REVEAL ANIMATIONS ---
             const revealElements = document.querySelectorAll('.reveal');
-            
             const revealObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -609,7 +577,6 @@
 
             // --- 3. DYNAMIC BACKGROUND INTENSITY (The deeper you scroll, the darker/redder it gets) ---
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            
             window.addEventListener('scroll', () => {
                 const scrollPos = window.scrollY;
                 const scrollPercent = scrollPos / docHeight;
@@ -649,7 +616,7 @@
                     this.y = Math.random() * height;
                     this.vx = (Math.random() - 0.5) * 0.5;
                     // Move slowly upwards
-                    this.vy = Math.random() * -1 - 0.2; 
+                    this.vy = Math.random() * -1 - 0.2;
                     this.size = Math.random() * 3 + 1;
                     // Grey to dark red colors for embers/ash look
                     const isRed = Math.random() > 0.8;
